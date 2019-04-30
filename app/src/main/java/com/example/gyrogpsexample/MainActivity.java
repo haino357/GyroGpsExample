@@ -1,6 +1,8 @@
 package com.example.gyrogpsexample;
 
 import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.ActivityInfo;
 import android.hardware.Sensor;
@@ -9,11 +11,12 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.RemoteException;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
-
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity
         implements SensorEventListener {
@@ -27,8 +30,20 @@ public class MainActivity extends AppCompatActivity
     private TextView mYAxisValueTextView; //Y軸
     private TextView mZAxisValueTextView; //Z軸
 
+    public float XAxisValue = 0;
+    public float YAxisValue = 0;
+    public float ZAxisValue = 0;
+
+    private Button mStartButton;
+
+    /**
+     * サービスと接続・切断された時の処理
+     */
     private final ServiceConnection mConnection = new ServiceConnection() {
 
+        /**
+         * サービスに接続された
+         */
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
             // Following the example above for an AIDL interface,
@@ -39,14 +54,32 @@ public class MainActivity extends AppCompatActivity
             mIGyroService = IGyroService.Stub.asInterface(service);
 
             try {
-                mXAxisValueTextView.setText(String.valueOf(mIGyroService.getGyroValue()));
-                mYAxisValueTextView.setText(Ystr);
-                mZAxisValueTextView.setText(Zstr);
+                XAxisValue = mIGyroService.getXAxisGyroValue();
+                YAxisValue = mIGyroService.getYAxisGyroValue();
+                ZAxisValue = mIGyroService.getZAxisGyroValue();
+//                mXAxisValueTextView.setText(String.valueOf(mIGyroService.getXAxisGyroValue()));
+//                mYAxisValueTextView.setText(String.valueOf(mIGyroService.getYAxisGyroValue()));
+//                mZAxisValueTextView.setText(String.valueOf(mIGyroService.getZAxisGyroValue()));
+            } catch (RemoteException e) {
+                e.printStackTrace();
             }
         }
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
+            Log.d(TAG, "onServiceDisconnected()");
+            mIGyroService = null;
+        }
+    };
+
+    //---------- Event Listener ----------//
+    private View.OnClickListener startServiceListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            Log.d(TAG, "startButton.onClick()");
+            //サービスを開始する
+            Intent serviceIntent = new Intent(getApplicationContext(), GyroService.class);
+            bindService(serviceIntent, mConnection, Context.BIND_AUTO_CREATE);
 
         }
     };
@@ -63,19 +96,23 @@ public class MainActivity extends AppCompatActivity
 
         manager = (SensorManager) getSystemService(SENSOR_SERVICE);
 
+        mStartButton = (Button) findViewById(R.id.startButton);
+
+        mStartButton.setOnClickListener(startServiceListener);
+
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        //Listenner登録
-        List<Sensor> sensors = manager.getSensorList(Sensor.TYPE_GYROSCOPE);
-
-        if(sensors.size() > 0) {
-            Sensor s =sensors.get(0);
-            manager.registerListener(this, s, SensorManager.SENSOR_DELAY_UI);
-        }
-    }
+//    @Override
+//    protected void onResume() {
+//        super.onResume();
+//        //Listenner登録
+//        List<Sensor> sensors = manager.getSensorList(Sensor.TYPE_GYROSCOPE);
+//
+//        if(sensors.size() > 0) {
+//            Sensor s =sensors.get(0);
+//            manager.registerListener(this, s, SensorManager.SENSOR_DELAY_UI);
+//        }
+//    }
 
     @Override
     protected void onStop() {
@@ -85,14 +122,14 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        if (event.sensor.getType() == Sensor.TYPE_GYROSCOPE) {
-            String Xstr = "X軸：" + String.valueOf(event.values[0]);
-            String Ystr = "Y軸：" + String.valueOf(event.values[1]);
-            String Zstr = "Z軸：" + String.valueOf(event.values[2]);
-            mXAxisValueTextView.setText(Xstr);
-            mYAxisValueTextView.setText(Ystr);
-            mZAxisValueTextView.setText(Zstr);
-        }
+//        if (event.sensor.getType() == Sensor.TYPE_GYROSCOPE) {
+//            String Xstr = "X軸：" + String.valueOf(event.values[0]);
+//            String Ystr = "Y軸：" + String.valueOf(event.values[1]);
+//            String Zstr = "Z軸：" + String.valueOf(event.values[2]);
+            mXAxisValueTextView.setText(String.valueOf(XAxisValue));
+            mYAxisValueTextView.setText(String.valueOf(YAxisValue));
+            mZAxisValueTextView.setText(String.valueOf(ZAxisValue));
+//        }
     }
 
     @Override

@@ -5,9 +5,9 @@ package com.example.gyrogpsexample;
 
 interface IGyroService {
 
-    int getXAxisGyroValue();
-    int getYAxisGyroValue();
-    int getZAxisGyroValue();
+    float getXAxisGyroValue();
+    float getYAxisGyroValue();
+    float getZAxisGyroValue();
 
     /**
      * Demonstrates some basic types that you can use as parameters
