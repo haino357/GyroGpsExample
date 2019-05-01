@@ -36,6 +36,21 @@ public class MainActivity extends AppCompatActivity
 
     private Button mStartButton;
 
+    private IGyroCallback mIGyroCallback = new IGyroCallback.Stub() {
+        @Override
+        public void result(int w, int h) throws RemoteException {
+            // サービスからのコールバック
+            // サービスは UI スレッドとは別スレッドで稼働しているため、
+            // UI スレッドの View を操作するには、View#post(Runnable r) を利用する
+//            mCalcResultTextView.post(new Runnable() {
+//                @Override
+//                public void run() {
+//                    mCalcResultTextView.setText(String.valueOf(w * h));
+//                }
+//            });
+        }
+    };
+
     /**
      * サービスと接続・切断された時の処理
      */
@@ -53,16 +68,20 @@ public class MainActivity extends AppCompatActivity
             //サービス上の呼び出せる IGyroServiceのインスタンスを取得する。
             mIGyroService = IGyroService.Stub.asInterface(service);
 
-            try {
-                XAxisValue = mIGyroService.getXAxisGyroValue();
-                YAxisValue = mIGyroService.getYAxisGyroValue();
-                ZAxisValue = mIGyroService.getZAxisGyroValue();
-//                mXAxisValueTextView.setText(String.valueOf(mIGyroService.getXAxisGyroValue()));
-//                mYAxisValueTextView.setText(String.valueOf(mIGyroService.getYAxisGyroValue()));
-//                mZAxisValueTextView.setText(String.valueOf(mIGyroService.getZAxisGyroValue()));
-            } catch (RemoteException e) {
-                e.printStackTrace();
-            }
+
+            // サービスから取得した文字列画面に表示する
+
+
+//            try {
+//                XAxisValue = mIGyroService.getXAxisGyroValue();
+//                YAxisValue = mIGyroService.getYAxisGyroValue();
+//                ZAxisValue = mIGyroService.getZAxisGyroValue();
+////                mXAxisValueTextView.setText(String.valueOf(mIGyroService.getXAxisGyroValue()));
+////                mYAxisValueTextView.setText(String.valueOf(mIGyroService.getYAxisGyroValue()));
+////                mZAxisValueTextView.setText(String.valueOf(mIGyroService.getZAxisGyroValue()));
+//            } catch (RemoteException e) {
+//                e.printStackTrace();
+//            }
         }
 
         @Override
